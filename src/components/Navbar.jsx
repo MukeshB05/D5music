@@ -1,3 +1,4 @@
+```jsx
 import { Link, useNavigate } from "react-router-dom";
 import { useState, useContext, useEffect } from "react";
 import {
@@ -8,7 +9,7 @@ import {
 } from "../../fetch";
 import MusicContext from "../context/MusicContext";
 import he from "he";
-import Theme from "../../theme";
+import Theme from "../theme";
 import { IoSearchOutline } from "react-icons/io5";
 
 const Navbar = () => {
@@ -18,85 +19,127 @@ const Navbar = () => {
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState([]);
 
-  // Fetch suggestions
+  // --------------------------------------------------
+  // Fetch search suggestions
+  // --------------------------------------------------
   const fetchSuggestions = async (searchQuery) => {
-    if (!searchQuery.trim()) {
+    const trimmedQuery = searchQuery.trim();
+
+    if (!trimmedQuery) {
       setSuggestions([]);
       return;
     }
 
     try {
       const [result, song, artist] = await Promise.all([
-        getSearchData(searchQuery),
-        getSongbyQuery(searchQuery, 5),
-        getArtistbyQuery(searchQuery, 5),
+        getSearchData(trimmedQuery),
+        getSongbyQuery(trimmedQuery, 5),
+        getArtistbyQuery(trimmedQuery, 5),
       ]);
 
       const allSuggestions = [];
 
+      // --------------------------------------------------
       // Songs
-      if (song?.data?.results) {
+      // --------------------------------------------------
+      if (song?.data?.results && Array.isArray(song.data.results)) {
         allSuggestions.push(
           ...song.data.results.map((item) => ({
             type: "Song",
-            name: item.name,
-            id: item.id,
-            duration: item.duration,
-            artist: item.artists,
-            image: item.image?.[2]?.url || item.image?.[0]?.url || "",
+            name: item?.name || "",
+            id: item?.id,
+            duration: item?.duration || 0,
+            artist: item?.artists || [],
+            image:
+              item?.image?.[2]?.url ||
+              item?.image?.[1]?.url ||
+              item?.image?.[0]?.url ||
+              "",
             downloadUrl:
-              item.downloadUrl?.[4]?.url ||
-              item.downloadUrl?.[0]?.url ||
+              item?.downloadUrl?.[4]?.url ||
+              item?.downloadUrl?.[3]?.url ||
+              item?.downloadUrl?.[2]?.url ||
+              item?.downloadUrl?.[1]?.url ||
+              item?.downloadUrl?.[0]?.url ||
               "",
           }))
         );
       }
 
+      // --------------------------------------------------
       // Albums
-      if (result?.data?.albums?.results) {
+      // --------------------------------------------------
+      if (
+        result?.data?.albums?.results &&
+        Array.isArray(result.data.albums.results)
+      ) {
         allSuggestions.push(
           ...result.data.albums.results.map((item) => ({
             type: "Album",
-            name: item.title,
-            id: item.id,
-            artist: item.artist,
-            image: item.image?.[2]?.url || item.image?.[0]?.url || "",
+            name: item?.title || item?.name || "",
+            id: item?.id,
+            artist: item?.artist || item?.artists || "",
+            image:
+              item?.image?.[2]?.url ||
+              item?.image?.[1]?.url ||
+              item?.image?.[0]?.url ||
+              "",
           }))
         );
       }
 
+      // --------------------------------------------------
       // Playlists
-      if (result?.data?.playlists?.results) {
+      // --------------------------------------------------
+      if (
+        result?.data?.playlists?.results &&
+        Array.isArray(result.data.playlists.results)
+      ) {
         allSuggestions.push(
           ...result.data.playlists.results.map((item) => ({
             type: "Playlist",
-            name: item.title,
-            id: item.id,
-            image: item.image?.[2]?.url || item.image?.[0]?.url || "",
+            name: item?.title || item?.name || "",
+            id: item?.id,
+            image:
+              item?.image?.[2]?.url ||
+              item?.image?.[1]?.url ||
+              item?.image?.[0]?.url ||
+              "",
           }))
         );
       }
 
+      // --------------------------------------------------
       // Artists
-      if (artist?.data?.results) {
+      // --------------------------------------------------
+      if (
+        artist?.data?.results &&
+        Array.isArray(artist.data.results)
+      ) {
         allSuggestions.push(
           ...artist.data.results.map((item) => ({
             type: "Artist",
-            name: item.name,
-            id: item.id,
-            image: item.image?.[2]?.url || item.image?.[0]?.url || "",
+            name: item?.name || "",
+            id: item?.id,
+            image:
+              item?.image?.[2]?.url ||
+              item?.image?.[1]?.url ||
+              item?.image?.[0]?.url ||
+              "",
           }))
         );
       }
 
       setSuggestions(allSuggestions);
     } catch (error) {
-      console.error("Error fetching suggestions:", error);
+      console.error("Error fetching search suggestions:", error);
       setSuggestions([]);
     }
   };
 
-  // Debounce search requests
+  // --------------------------------------------------
+  // Debounce search
+  // --------------------------------------------------
   useEffect(() => {
     const timer = setTimeout(() => {
       fetchSuggestions(query);
@@ -105,10 +148,16 @@ const Navbar = () => {
     return () => clearTimeout(timer);
   }, [query]);
 
+  // --------------------------------------------------
+  // Search input
+  // --------------------------------------------------
   const handleSearchInputChange = (event) => {
     setQuery(event.target.value);
   };
 
+  // --------------------------------------------------
+  // Submit search
+  // --------------------------------------------------
   const handleSearchSubmit = (event) => {
     event.preventDefault();
 
@@ -121,22 +170,40 @@ const Navbar = () => {
     setSuggestions([]);
   };
 
+  // --------------------------------------------------
+  // Greeting
+  // --------------------------------------------------
   const getGreeting = () => {
     const hours = new Date().getHours();
 
-    return hours < 12
-      ? "Good Morning"
-      : hours < 18
-      ? "Good Afternoon"
-      : hours < 21
-      ? "Good Evening"
-      : "Good Night";
+    if (hours < 12) {
+      return "Good Morning";
+    }
+
+    if (hours < 18) {
+      return "Good Afternoon";
+    }
+
+    if (hours < 21) {
+      return "Good Evening";
+    }
+
+    return "Good Night";
   };
 
+  // --------------------------------------------------
+  // Get recommended songs
+  // --------------------------------------------------
   const getData = async (suggestion) => {
     try {
+      if (!suggestion?.id) {
+        return [suggestion];
+      }
+
       const response = await getSuggestionSong(suggestion.id);
-      const suggestedSongs = response?.data || [];
+      const suggestedSongs = Array.isArray(response?.data)
+        ? response.data
+        : [];
 
       return [suggestion, ...suggestedSongs];
     } catch (error) {
@@ -145,37 +212,54 @@ const Navbar = () => {
     }
   };
 
+  // --------------------------------------------------
+  // Suggestion click
+  // --------------------------------------------------
   const handleSuggestionClick = async (suggestion) => {
     setQuery("");
     setSuggestions([]);
 
+    if (!suggestion) return;
+
     switch (suggestion.type) {
       case "Song": {
-        const list = await getData(suggestion);
+        try {
+          const list = await getData(suggestion);
 
-        playMusic(
-          suggestion.downloadUrl,
-          suggestion.name,
-          suggestion.duration,
-          suggestion.image,
-          suggestion.id,
-          suggestion.artist,
-          list
-        );
+          if (typeof playMusic === "function") {
+            playMusic(
+              suggestion.downloadUrl || "",
+              suggestion.name || "",
+              suggestion.duration || 0,
+              suggestion.image || "",
+              suggestion.id,
+              suggestion.artist || [],
+              list
+            );
+          }
+        } catch (error) {
+          console.error("Unable to play song:", error);
+        }
 
         break;
       }
 
       case "Album":
-        navigate(`/albums/${suggestion.id}`);
+        if (suggestion.id) {
+          navigate(`/albums/${suggestion.id}`);
+        }
         break;
 
       case "Artist":
-        navigate(`/artists/${suggestion.id}`);
+        if (suggestion.id) {
+          navigate(`/artists/${suggestion.id}`);
+        }
         break;
 
       case "Playlist":
-        navigate(`/playlists/${suggestion.id}`);
+        if (suggestion.id) {
+          navigate(`/playlists/${suggestion.id}`);
+        }
         break;
 
       default:
@@ -183,6 +267,9 @@ const Navbar = () => {
     }
   };
 
+  // --------------------------------------------------
+  // Navbar
+  // --------------------------------------------------
   return (
     <nav className="navbar flex flex-col lg:gap-10 lg:flex-row lg:items-center top-0 z-20 fixed w-full pl-1 pr-1 lg:px-2 lg:h-[4.5rem]">
       {/* Logo / Navigation */}
@@ -197,10 +284,12 @@ const Navbar = () => {
             </div>
           </Link>
 
+          {/* Mobile greeting */}
           <div className="text-lg pl-6 w-max flex self-center lg:hidden font-semibold">
             {getGreeting()}
           </div>
 
+          {/* Theme */}
           <Theme />
         </div>
 
@@ -233,10 +322,12 @@ const Navbar = () => {
               onChange={handleSearchInputChange}
               autoComplete="off"
               autoCorrect="off"
+              spellCheck="false"
             />
 
             <button
               type="submit"
+              aria-label="Search"
               className="search-btn h-11 w-11 rounded-r-lg flex items-center justify-center"
             >
               <IoSearchOutline className="text-2xl search" />
@@ -247,37 +338,38 @@ const Navbar = () => {
           <div
             className={`suggestionSection lg:shadow-xl absolute scroll-hide top-[2.74rem] lg:top-[4.5rem] left-0 lg:left-auto p-3 grid grid-cols-2 lg:grid-cols-3 gap-3 rounded-lg w-full max-h-[20rem] overflow-auto transition-all duration-200 ${
               suggestions.length > 0
-                ? "visible opacity-100"
-                : "invisible opacity-0"
+                ? "visible opacity-100 pointer-events-auto"
+                : "invisible opacity-0 pointer-events-none"
             }`}
           >
             {suggestions.map((suggestion, index) => (
-              <div
+              <button
+                type="button"
                 key={`${suggestion.type}-${suggestion.id}-${index}`}
-                className="flex items-center gap-3 p-3 rounded cursor-pointer hover:opacity-80"
+                className="flex items-center gap-3 p-3 rounded cursor-pointer hover:opacity-80 text-left w-full"
                 onClick={() => handleSuggestionClick(suggestion)}
               >
                 {suggestion.image ? (
                   <img
                     src={suggestion.image}
                     alt={suggestion.name || ""}
-                    className="h-[3rem] w-[3rem] rounded object-cover"
+                    className="h-[3rem] w-[3rem] min-w-[3rem] rounded object-cover"
                     loading="lazy"
                   />
                 ) : (
-                  <div className="h-[3rem] w-[3rem] rounded bg-gray-500/20" />
+                  <div className="h-[3rem] w-[3rem] min-w-[3rem] rounded bg-gray-500/20" />
                 )}
 
                 <div className="flex flex-col overflow-hidden">
                   <span className="text-sm truncate">
-                    {he.decode(suggestion.name || "")}
+                    {he.decode(String(suggestion.name || ""))}
                   </span>
 
                   <span className="text-xs">
                     {suggestion.type}
                   </span>
                 </div>
-              </div>
+              </button>
             ))}
           </div>
         </form>
@@ -287,3 +379,4 @@ const Navbar = () => {
 };
 
 export default Navbar;
+```
