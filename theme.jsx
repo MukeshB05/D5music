@@ -1,39 +1,66 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { IoSunny, IoMoon } from "react-icons/io5";
-import "./src/theme.css";
+import "./theme.css";
 
 const Theme = () => {
   const [theme, setTheme] = useState(() => {
+    if (typeof window === "undefined") {
+      return "light";
+    }
+
     return localStorage.getItem("theme") || "light";
   });
 
   useEffect(() => {
-    document.documentElement.setAttribute("data-theme", theme);
+    document.documentElement.setAttribute(
+      "data-theme",
+      theme
+    );
+
     localStorage.setItem("theme", theme);
   }, [theme]);
 
+  const toggleTheme = () => {
+    setTheme((current) =>
+      current === "dark" ? "light" : "dark"
+    );
+  };
+
+  const handleKeyDown = (event) => {
+    if (
+      event.key === "Enter" ||
+      event.key === " "
+    ) {
+      event.preventDefault();
+      toggleTheme();
+    }
+  };
+
   return (
     <div className="theme-wrapper">
-      <div
+      <button
+        type="button"
         className={`theme-switch ${theme}`}
-        onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+        onClick={toggleTheme}
+        onKeyDown={handleKeyDown}
+        aria-label={
+          theme === "dark"
+            ? "Switch to light theme"
+            : "Switch to dark theme"
+        }
       >
-        <div className="theme-labels w-screen">
-          <span className={`label ${theme === "light" ? "active  pl-[2rem]" : "hidden"}`}>
-            DAY
-          </span>
-          <span className={`label ${theme === "dark" ? "active" : "hidden"}`}>
-            NIGHT
-          </span>
-        </div>
-        <div className="slider">
+        <span className="theme-labels">
+          {theme === "light" ? "DAY" : "NIGHT"}
+        </span>
+
+        <span className="slider">
           {theme === "light" ? (
             <IoSunny className="slider-icon" />
           ) : (
             <IoMoon className="slider-icon" />
           )}
-        </div>
-      </div>
+        </span>
+      </button>
     </div>
   );
 };
