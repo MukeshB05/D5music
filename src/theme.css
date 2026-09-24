@@ -1,74 +1,212 @@
+/* =========================================================
+   MUSICMAX THEME SWITCH
+========================================================= */
+
 .theme-wrapper {
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   margin: 10px;
 }
 
-/* Main switch container */
+/* Main switch */
 .theme-switch {
+  position: relative;
   width: 95px;
   height: 40px;
-  background: linear-gradient(to right, #ffcc70, #ff5e62); /* Light by default */
-  border-radius: 999px;
+
   display: flex;
   align-items: center;
-  position: relative;
+
+  padding: 5px;
+
+  border: 0;
+  border-radius: 999px;
+
   cursor: pointer;
-  padding: 5px 10px;
-  transition: background 0.5s ease;
+
+  background: linear-gradient(
+    to right,
+    #ffcc70,
+    #ff5e62
+  );
+
+  box-shadow:
+    0 4px 10px rgba(0, 0, 0, 0.2);
+
+  transition:
+    background 0.4s ease,
+    box-shadow 0.3s ease,
+    transform 0.2s ease;
+
   font-family: sans-serif;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+
+  overflow: hidden;
+
+  appearance: none;
+  -webkit-appearance: none;
+
+  flex-shrink: 0;
 }
 
-/* Night theme gradient */
-.theme-switch.dark {
-  background: linear-gradient(to right, #283e51, #485563);
+/* Hover */
+.theme-switch:hover {
+  box-shadow:
+    0 6px 14px rgba(0, 0, 0, 0.28);
 }
+
+/* Press */
+.theme-switch:active {
+  transform: scale(0.96);
+}
+
+/* Keyboard accessibility */
+.theme-switch:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 3px;
+}
+
+/* =========================================================
+   DARK / NIGHT
+========================================================= */
+
+.theme-switch.dark {
+  background: linear-gradient(
+    to right,
+    #283e51,
+    #485563
+  );
+}
+
+/* =========================================================
+   TEXT
+========================================================= */
 
 .theme-labels {
-  width: auto;
+  position: absolute;
+
+  inset: 0;
+
   display: flex;
-  justify-content: space-between;
+  align-items: center;
+  justify-content: flex-end;
+
+  padding-right: 10px;
+
   z-index: 1;
 
+  pointer-events: none;
+
+  color: rgba(255, 255, 255, 0.95);
+
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+
+  user-select: none;
 }
 
-.label {
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 14px;
-  font-weight: bold;
-  transition: color 0.3s ease;
+/* Night text needs space on the left */
+.theme-switch.dark .theme-labels {
+  justify-content: flex-start;
+  padding-left: 10px;
+  padding-right: 0;
 }
 
-.label.active {
-  color: #fff;
-}
+/* =========================================================
+   SLIDER
+========================================================= */
 
-/* Slider circle */
 .slider {
-  width: 30px;
-  height: 30px;
-  background-color: white;
-  border-radius: 50%;
   position: absolute;
+
   top: 5px;
   left: 5px;
+
+  width: 30px;
+  height: 30px;
+
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: left 0.4s ease;
+
+  background: #ffffff;
+
+  border-radius: 50%;
+
   z-index: 2;
+
+  transition:
+    left 0.4s ease,
+    transform 0.4s ease,
+    background 0.3s ease;
+
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.2);
+
+  pointer-events: none;
 }
 
+/* Move slider to right in dark mode */
 .theme-switch.dark .slider {
-  left: calc(100% - 35px); /* 220 - 50 - 10(padding + margin) */
+  left: calc(100% - 35px);
 }
+
+/* =========================================================
+   ICON
+========================================================= */
 
 .slider-icon {
-  font-size: 24px;
+  width: 21px;
+  height: 21px;
+
+  font-size: 21px;
+
   color: #ff5e62;
+
+  transition:
+    color 0.3s ease,
+    transform 0.3s ease;
 }
+
+/* Moon */
 .theme-switch.dark .slider-icon {
   color: #90caf9;
+}
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 640px) {
+  .theme-wrapper {
+    margin: 8px;
+  }
+
+  .theme-switch {
+    width: 90px;
+    height: 38px;
+  }
+
+  .slider {
+    top: 4px;
+    left: 4px;
+
+    width: 30px;
+    height: 30px;
+  }
+
+  .theme-switch.dark .slider {
+    left: calc(100% - 34px);
+  }
+
+  .slider-icon {
+    width: 20px;
+    height: 20px;
+    font-size: 20px;
+  }
+
+  .theme-labels {
+    font-size: 10px;
+  }
 }
